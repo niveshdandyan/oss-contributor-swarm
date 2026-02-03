@@ -283,6 +283,98 @@ Daily:
   - Check if should escalate due to inactivity
 ```
 
+## PR History Integration
+
+Keep the PR tracking system updated with the latest status and activity.
+
+### Status Update Triggers
+
+Update PR tracker when:
+1. **Review received** - Any review activity
+2. **Changes pushed** - After auto-fix or manual changes
+3. **CI status change** - When CI passes or fails
+4. **PR merged/closed** - Final outcome
+
+### Integration Code
+
+```bash
+# After responding to review, update status:
+./scripts/pr-tracker.sh update "$PR_NUMBER" --repo "$REPO" --fetch
+
+# After PR is merged:
+./scripts/pr-tracker.sh update "$PR_NUMBER" --repo "$REPO" --fetch
+
+# After PR is closed:
+./scripts/pr-tracker.sh update "$PR_NUMBER" --repo "$REPO" --fetch
+```
+
+### Update Schedule
+
+| Event | Action |
+|-------|--------|
+| Review received | `pr-tracker update --fetch` |
+| Auto-fix pushed | `pr-tracker update --fetch` |
+| CI status change | `pr-tracker update --fetch` |
+| PR merged | `pr-tracker update --fetch` |
+| PR closed | `pr-tracker update --fetch` |
+
+### Example Integration in Monitoring Loop
+
+```bash
+# In monitoring loop
+while pr_is_open:
+    check_reviews()
+    check_ci_status()
+    check_comments()
+
+    if changes_requested:
+        analyze_and_respond()
+        # Update tracker after responding
+        ./scripts/pr-tracker.sh update "$PR_NUMBER" --repo "$REPO" --fetch
+
+    if status_changed:
+        # Update tracker when status changes
+        ./scripts/pr-tracker.sh update "$PR_NUMBER" --repo "$REPO" --fetch
+
+    sleep 300  # 5 minutes
+```
+
+### Final Outcome Recording
+
+When PR reaches final state, ensure tracker is updated:
+
+```bash
+# On merge
+if [ "$PR_STATE" = "merged" ]; then
+    ./scripts/pr-tracker.sh update "$PR_NUMBER" --repo "$REPO" --fetch
+    echo "PR $PR_NUMBER recorded as merged in tracker"
+fi
+
+# On close (without merge)
+if [ "$PR_STATE" = "closed" ]; then
+    ./scripts/pr-tracker.sh update "$PR_NUMBER" --repo "$REPO" --fetch
+    echo "PR $PR_NUMBER recorded as closed in tracker"
+fi
+```
+
+### Updated Output Format
+
+Add `pr_tracker` field to `review-activity.json`:
+
+```json
+{
+  "agent": "agent-8-reviews",
+  "timestamp": "2024-01-15T12:00:00Z",
+  "status": "monitoring",
+  "pr": { ... },
+  "pr_tracker": {
+    "last_update": "2024-01-15T12:00:00Z",
+    "updates_sent": 3,
+    "final_status_recorded": false
+  }
+}
+```
+
 ## When Complete
 
 Record final outcome to `./shared/contribution-history.json` for learning:

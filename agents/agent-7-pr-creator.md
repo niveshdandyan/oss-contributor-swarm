@@ -196,6 +196,87 @@ gh pr checks 456 --repo owner/repo --watch
 - Forgetting to sign commits (if required)
 - Creating PR against wrong branch
 
+## PR History Integration
+
+After successfully creating a PR, log it to the PR tracking system for historical analysis and learning.
+
+### Integration Steps
+
+1. **Extract PR metadata** from the created PR
+2. **Call pr-tracker** to add the PR to history
+3. **Verify** the PR was logged successfully
+
+### Integration Code
+
+```bash
+# After successful PR creation, add to history:
+./scripts/pr-tracker.sh add \
+  --repo "$REPO" \
+  --issue "$ISSUE_NUMBER" \
+  --pr "$PR_NUMBER" \
+  --title "$PR_TITLE" \
+  --domain "$DOMAIN" \
+  --score "$VALUE_SCORE" \
+  --type "$CONTRIBUTION_TYPE" \
+  --files "$FILES_CHANGED" \
+  --lines-added "$LINES_ADDED" \
+  --lines-removed "$LINES_REMOVED"
+```
+
+### Variable Mapping
+
+| Variable | Source |
+|----------|--------|
+| `$REPO` | Repository in `owner/name` format |
+| `$ISSUE_NUMBER` | From `current-issue.json` |
+| `$PR_NUMBER` | From `gh pr create` output |
+| `$PR_TITLE` | PR title used in creation |
+| `$DOMAIN` | From `issue-analysis.json` (type field) |
+| `$VALUE_SCORE` | Computed from complexity and impact |
+| `$CONTRIBUTION_TYPE` | From `issue-analysis.json` (documentation/bug-fix/feature) |
+| `$FILES_CHANGED` | Count from code changes |
+| `$LINES_ADDED` | Total additions from all changes |
+| `$LINES_REMOVED` | Total deletions from all changes |
+
+### Example Integration
+
+```bash
+# After PR is created successfully
+PR_OUTPUT=$(gh pr create --title "$TITLE" --body "$BODY" --base main 2>&1)
+PR_NUMBER=$(echo "$PR_OUTPUT" | grep -oP 'pull/\K[0-9]+')
+
+# Log to PR tracker
+./scripts/pr-tracker.sh add \
+  --repo "owner/repo" \
+  --issue "123" \
+  --pr "$PR_NUMBER" \
+  --title "fix: correct typo in README" \
+  --domain "documentation" \
+  --score "3" \
+  --type "docs" \
+  --files "1" \
+  --lines-added "1" \
+  --lines-removed "1"
+```
+
+### Updated Output Format
+
+Add `pr_tracker` field to `pr-created.json`:
+
+```json
+{
+  "agent": "agent-7-pr",
+  "timestamp": "2024-01-15T11:00:00Z",
+  "status": "completed",
+  "pr": { ... },
+  "pr_tracker": {
+    "logged": true,
+    "tracker_id": "uuid-from-tracker",
+    "initial_status": "open"
+  }
+}
+```
+
 ## When Complete
 
 Signal orchestrator that PR is created. Agent 8 will now monitor for reviews and CI status.
