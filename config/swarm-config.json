@@ -1,0 +1,190 @@
+{
+  "swarm": {
+    "name": "oss-contributor-swarm",
+    "version": "2.0.0",
+    "description": "Autonomous multi-agent system for continuous open source contributions with learning"
+  },
+  "agents": {
+    "count": 9,
+    "list": [
+      "agent-0-qualifier",
+      "agent-1-scout",
+      "agent-2-analyst",
+      "agent-3-explorer",
+      "agent-4-coder",
+      "agent-5-tester",
+      "agent-6-docs",
+      "agent-7-pr",
+      "agent-8-reviews"
+    ],
+    "timeout_per_agent": 600,
+    "retry_failed": true,
+    "max_retries": 2
+  },
+  "repo_qualification": {
+    "enabled": true,
+    "min_stars": 50,
+    "max_stars": 10000,
+    "max_days_since_commit": 30,
+    "max_open_issues_ratio": 0.5,
+    "require_contributing_md": true,
+    "require_license": true,
+    "skip_complex_cla": true,
+    "min_qualification_score": 60,
+    "scoring": {
+      "stars_weight": 20,
+      "recency_weight": 25,
+      "contributing_weight": 20,
+      "merge_time_weight": 20,
+      "issues_ratio_weight": 15
+    }
+  },
+  "issue_selection": {
+    "quality_filters": {
+      "min_body_length": 100,
+      "max_body_length": 5000,
+      "max_comments": 5,
+      "min_age_days": 1,
+      "max_age_days": 60,
+      "require_no_linked_prs": true,
+      "require_unassigned": true
+    },
+    "priority_types": [
+      {"type": "typo", "score": 30},
+      {"type": "documentation", "score": 28},
+      {"type": "test", "score": 25},
+      {"type": "bug-simple", "score": 22},
+      {"type": "config", "score": 20},
+      {"type": "refactor-small", "score": 15},
+      {"type": "feature-small", "score": 10}
+    ],
+    "avoid_patterns": [
+      "breaking change",
+      "major refactor",
+      "security",
+      "authentication",
+      "payment",
+      "database migration",
+      "deprecation",
+      "api change"
+    ],
+    "min_issue_score": 60
+  },
+  "github": {
+    "search_labels": [
+      "good first issue",
+      "good-first-issue",
+      "beginner-friendly",
+      "help wanted",
+      "easy",
+      "starter",
+      "first-timers-only"
+    ],
+    "excluded_labels": [
+      "wontfix",
+      "duplicate",
+      "invalid",
+      "question",
+      "discussion",
+      "stale",
+      "blocked"
+    ],
+    "languages": [
+      "Python",
+      "JavaScript",
+      "TypeScript",
+      "Go",
+      "Rust",
+      "Java",
+      "Ruby"
+    ],
+    "rate_limit_delay_ms": 2000,
+    "rate_limit_min_remaining": 100
+  },
+  "contribution": {
+    "commit_convention": "conventional",
+    "branch_prefix": "fix/",
+    "sign_commits": false,
+    "pr_draft": false,
+    "pr_template": {
+      "include_issue_link": true,
+      "include_changes_summary": true,
+      "include_verification_steps": true
+    }
+  },
+  "monitoring": {
+    "check_interval_seconds": 300,
+    "max_review_wait_days": 14,
+    "stale_pr_days": 7,
+    "escalation_triggers": [
+      "major rework requested",
+      "approach disagreement",
+      "maintainer unresponsive",
+      "security concern raised",
+      "scope expansion requested"
+    ]
+  },
+  "auto_fix": {
+    "enabled": true,
+    "allowed_types": [
+      "typo",
+      "style",
+      "formatting",
+      "quotes",
+      "semicolons",
+      "whitespace",
+      "import_order",
+      "comment_addition"
+    ],
+    "disallowed_types": [
+      "logic_change",
+      "architecture",
+      "security",
+      "api_change",
+      "new_dependency"
+    ],
+    "max_auto_fix_attempts": 3
+  },
+  "continuous": {
+    "enabled": true,
+    "mode": "24/7",
+    "target_daily_prs": {
+      "min": 3,
+      "max": 5,
+      "hard_limit": 10
+    },
+    "cooldown_between_cycles_seconds": 60,
+    "max_concurrent_prs": 3,
+    "daily_pr_limit": 10,
+    "monitoring_interval_seconds": 300,
+    "daily_summary_hour": 23
+  },
+  "learning": {
+    "enabled": true,
+    "history_file": "shared/contribution-history.json",
+    "track_patterns": true,
+    "boost_successful_repos": 15,
+    "boost_successful_types": 10,
+    "penalize_slow_repos": true,
+    "auto_avoid_threshold": 3,
+    "success_metrics": {
+      "target_success_rate": 0.8,
+      "target_merge_time_hours": 72,
+      "target_auto_fix_rate": 0.8
+    }
+  },
+  "safety": {
+    "never_force_push": true,
+    "never_modify_ci": true,
+    "respect_code_owners": true,
+    "check_contributing_guide": true,
+    "verify_no_secrets": true,
+    "max_files_per_pr": 5,
+    "max_lines_changed": 100,
+    "require_human_approval_for": [
+      "security_fixes",
+      "dependency_updates",
+      "config_changes"
+    ]
+  }
+}
